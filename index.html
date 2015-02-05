@@ -1,6 +1,41 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
+  <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5/leaflet.css" />
 
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="http://d3js.org/topojson.v1.min.js"></script>
 <script src="http://d3js.org/colorbrewer.v1.min.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.2/leaflet.js"></script>
+  <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+
+<body>
+	 <div style="width:1000px; height:700px" id="map"></div>
+<script>
+ var osm = new L.TileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        { attribution: 'Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors' }
+        );
+
+      //create map object
+      var map = new L.Map('map', {
+          center: [49.5, -122.3],
+          zoom: 9,
+          layers: [osm]
+      });
+
+
+     var geojsonLayer = new L.GeoJSON();
+
+      function getJson(data) {
+          console.log(data)
+          geojsonLayer.addData(data);
+      }
+
+      $.ajax({
+          url: "http://pbrown.ca:8080/geoserver/cite/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=cite:steelhead&maxFeatures=50&outputFormat=application/json",
+          dataType: 'json',
+          jsonCallback: 'getJson',
+          success: getJson
+      });
+
+      // map.addLayer(geojsonLayer);
+</script>
