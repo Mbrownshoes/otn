@@ -69,7 +69,7 @@ var map = L.map('map')
 	.addLayer(basemap)
 	.setView([49.4, -123.1], 12);
 
-var geojsonLayer = new L.GeoJSON();
+// var geojsonLayer = new L.GeoJSON();
 var fishData;
 
 var svg = d3.select(map.getPanes().overlayPane).append("svg");
@@ -79,7 +79,7 @@ var g = svg.append("g").attr("class", "leaflet-zoom-hide");
 // putting d3 code here to access ajax response
 function getJson(data) {
 	fishData = data;
-	geojsonLayer.addData(data);
+	// geojsonLayer.addData(data);
 
 	var featuresData = fishData.features.filter(
 		function(d) {

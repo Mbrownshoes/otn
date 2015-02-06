@@ -15,4 +15,15 @@ fish.json: build/steelhead.csv
 	-p fish="catalognumber" \
 	-p timestamp="datecollected" \
 	-p geom="st_setsrid_4326" \
-	-- fish=$<
+	-- fish
+
+
+build/subunits.json: build/Boundaries/CD_2011.shp
+	ogr2ogr -f GeoJSON  -t_srs "+proj=latlong +datum=WGS84" -where "CDNAME like 'Greater%'" \
+	build/subunits.json \
+	build/Boundaries/CD_2011.shp
+
+vancouver.json: build/subunits.json
+	node_modules/.bin/topojson \
+		-o $@ \
+		-- $<
