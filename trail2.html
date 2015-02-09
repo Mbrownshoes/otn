@@ -53,6 +53,9 @@
 .g-land {
   fill: white;
 }
+.g-water {
+  fill: #e0e9ef;
+}
 
 .g-course {
   fill: none;
@@ -242,7 +245,7 @@ var x = d3.scale.linear()
 
 
 var xTicks = {
-  "0": "Start"
+  // "0": "Tagged"
 };
 
 
@@ -293,10 +296,21 @@ dateTime;
 d3.json("vancouver.json", function(error, vancouver) {
   if (error) return console.error(error);
 
+
   svg.append("path")
   .datum(topojson.mesh(vancouver))
   .attr("class", "g-land")
   .attr("d", path);
+
+});
+
+d3.json("lakes.json", function(error, lakes) {
+  if (error) return console.error(error);
+
+  svg.append("path")
+  .datum(topojson.mesh(lakes))
+  .attr("d", path)
+  .attr("class", "g-water");
 
 });
 
@@ -398,7 +412,7 @@ boat = svg.selectAll(".g-boat")
 .enter().append("g")
 .attr("class", function(d) { return "g-boat g-boat-" + d.id; })
 
-boat.append("circle").attr("r", 7);
+boat.append("circle").attr("r", 5);
 
   // boat.append("text")
   //     .text(function(d) { return d.id.substr(0, 2); })
@@ -416,9 +430,15 @@ boat.append("circle").attr("r", 7);
 
   svg.append("text")
   .attr("x", 530)
-  .attr("y", 120)
+  .attr("y", 220)
   .attr("class", "g-island")
   .text("North Vancouver");
+
+  svg.append("text")
+  .attr("x", 390)
+  .attr("y", 320)
+  .attr("class", "g-island")
+  .text("Capilano Lake");
 
   playButton
   .on("click", paused)

@@ -27,3 +27,13 @@ vancouver.json: build/subunits.json
 	node_modules/.bin/topojson \
 		-o $@ \
 		-- $<
+
+build/lakes.json: build/HydLake_shp
+	ogr2ogr -f GeoJSON -t_srs "+proj=latlong +datum=WGS84" \
+	build/lakes.json \
+	build/HydLake_shp
+
+lakes.json: build/lakes.json
+	node_modules/.bin/topojson \
+		-o $@ \
+		-- $<
