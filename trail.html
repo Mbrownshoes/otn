@@ -296,7 +296,7 @@ function ready(error, topo, usa, nzl) {
   var course = topojson.feature(topo, topo.objects.course);
 
   indexOffset = -usa[0][2]; // offset from time -> index
-
+console.log(usa[0][2])
   var boats = [
     {type: "LineString", id: "usa", coordinates: usa},
     {type: "LineString", id: "nzl", coordinates: nzl}
@@ -512,7 +512,7 @@ function brushed() {
       return path({type: "LineString", coordinates: d.coordinates.slice(0, i + 1)}); });
 
     trail.attr("d", function(d) { 
-console.log(path({type: "LineString", coordinates: d.coordinates.slice(Math.max(0, i - trailLength), i + 1)}) )
+
       return path({type: "LineString", coordinates: d.coordinates.slice(Math.max(0, i - trailLength), i + 1)}); });
 
     // wind.select(".g-speed").text(function(d) { return windFormat(d[i][3]) + " knots"; });
