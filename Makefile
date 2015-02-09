@@ -37,3 +37,13 @@ lakes.json: build/lakes.json
 	node_modules/.bin/topojson \
 		-o $@ \
 		-- $<
+
+build/rivers.json: build/HydRiver_shp
+	ogr2ogr -f GeoJSON -t_srs "+proj=latlong +datum=WGS84" \
+	build/rivers.json \
+	build/HydRiver_shp
+
+rivers.json: build/rivers.json
+	node_modules/.bin/topojson \
+		-o $@ \
+		-- $<

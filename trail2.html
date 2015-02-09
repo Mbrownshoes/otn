@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5/leaflet.css" />
+<!-- <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5/leaflet.css" /> -->
 
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="http://d3js.org/topojson.v1.min.js"></script>
 <script src="http://d3js.org/colorbrewer.v1.min.js"></script>
-<script src="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.2/leaflet.js"></script>
+<!-- <script src="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.2/leaflet.js"></script> -->
 <!-- <script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script> -->
 <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
 <script src="http://d3js.org/queue.v1.min.js"></script>
+<link rel="stylesheet" href="main.css"> 
 
 <style>
 
@@ -18,9 +19,9 @@
 
 #g-play-button {
   position: absolute;
-  top: 15px;
+  top: 10px;
   left: 10px;
-  background: #004276;
+  background: rgb(116,173,209);
   padding-right: 26px;
   border-radius: 2px;
   border: none;
@@ -34,12 +35,13 @@
 }
 
 #g-play-button:hover {
-  background-color: #064d84;
+  background-color: rgb(69,117,180);
 }
 
 #g-play-button:active {
-  background-color: #002657;
+  background-color: rgb(171,217,233);
 }
+
 
 .g-graphic svg {
   border-top: solid 1px #ccc;
@@ -47,14 +49,14 @@
 }
 
 .g-background {
-  fill: #e0e9ef;
+  fill: #a6cef5;
 }
 
 .g-land {
   fill: white;
 }
 .g-water {
-  fill: #e0e9ef;
+  fill: #a6cef5;
 }
 
 .g-course {
@@ -114,7 +116,7 @@
 
 .g-trail-nzl,
 .g-track-nzl {
-  stroke: #405695;
+  stroke: #6baed6;
 }
 
 .g-boat-usa {
@@ -151,7 +153,7 @@
 
 .g-axis .domain {
   fill: none;
-  stroke: #fff;
+  stroke: #ddd;
   stroke-width: 8px;
   stroke-linecap: round;
 }
@@ -197,23 +199,11 @@
   fill-opacity: 0.3;
 }
 
-.g-wind text {
-  text-anchor: middle;
-  fill: #999;
-}
 
-.g-compass circle{
-  fill: white;
-  fill-opacity: 0.5;
-  stroke: none;
-  stroke-opacity: 0.2;
-}
-
-.g-compass line {
-  stroke: grey;
-}
 
 </style>
+<body>
+ <h1>Life of a Steelhead</h1>
 <div class="g-graphic">
     <button id="g-play-button">Pause</button>
 </div>
@@ -266,7 +256,7 @@ var brush = d3.svg.brush()
 
 var projection = d3.geo.mercator()
 .center([-123.1, 49.4])
-.scale(80000)
+.scale(125000)
 .translate([width / 2, height / 2]);
 
 var path = d3.geo.path()
@@ -309,6 +299,16 @@ d3.json("lakes.json", function(error, lakes) {
 
   svg.append("path")
   .datum(topojson.mesh(lakes))
+  .attr("d", path)
+  .attr("class", "g-water");
+
+});
+
+d3.json("rivers.json", function(error, rivers) {
+  if (error) return console.error(error);
+
+  svg.append("path")
+  .datum(topojson.mesh(rivers))
   .attr("d", path)
   .attr("class", "g-water");
 
@@ -423,19 +423,19 @@ boat.append("circle").attr("r", 5);
 
 
   svg.append("text")
-  .attr("x", width / 2.3)
+  .attr("x", width / 2.1)
   .attr("y", height - 20)
   .attr("class", "g-city")
-  .text("Vancouver");
-
-  svg.append("text")
-  .attr("x", 530)
-  .attr("y", 220)
-  .attr("class", "g-island")
   .text("North Vancouver");
 
+  // svg.append("text")
+  // .attr("x", 530)
+  // .attr("y", 220)
+  // .attr("class", "g-island")
+  // .text("North Vancouver");
+
   svg.append("text")
-  .attr("x", 390)
+  .attr("x", 450)
   .attr("y", 320)
   .attr("class", "g-island")
   .text("Capilano Lake");
@@ -461,7 +461,7 @@ function paused() {
     targetValue = maxValue;
     var i = Math.round(currentValue);
     slider.transition()
-        .duration((targetValue - currentValue) / (targetValue - minValue) * 40000)
+        .duration((targetValue - currentValue) / (targetValue - minValue) * 20000)
         .ease("linear")
         .call(brush.extent([targetValue, targetValue]))
         .call(brush.event)
