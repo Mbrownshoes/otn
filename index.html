@@ -116,7 +116,7 @@
 
 .g-trail-nzl,
 .g-track-nzl {
-  stroke: #6baed6;
+  stroke: #405695;
 }
 
 .g-boat-usa {
@@ -219,20 +219,20 @@
     maxValue,
     currentValue,
     targetValue,
-    trailLength = 15,
+    trailLength = 10,
     alpha = .25;
 
     var formatMinute = d3.format("+.0f");
 
-var xInd = d3.time.scale()
+
+
+var x = d3.scale.linear()
     .range([110, width - 40])
     .clamp(true);
 
-var x = d3.scale.linear()
-.range([110, width - 40])
-.clamp(true);
-
-
+// var x = d3.time.scale()
+//     .range([110, width-40])
+//     .clamp(true);
 
 var xTicks = {
   // "0": "Tagged"
@@ -255,31 +255,31 @@ var brush = d3.svg.brush()
 .on("brush", brushed);
 
 var projection = d3.geo.mercator()
-.center([-123.1, 49.4])
-.scale(155000)
-.translate([width / 2, height / 2]);
+    .center([-123.1, 49.4])
+    .scale(155000)
+    .translate([width / 2, height / 2]);
 
 var path = d3.geo.path()
-.projection(projection)
-.pointRadius(3.5);
+    .projection(projection)
+    .pointRadius(3.5);
 
 var playButton = d3.select("#g-play-button");
 
 var svg = d3.select(".g-graphic").append("svg")
-.attr("width", width)
-.attr("height", height);
+    .attr("width", width)
+    .attr("height", height);
 
 svg.append("rect")
-.attr("class", "g-background")
-.attr("width", width)
-.attr("height", height + 1);
+    .attr("class", "g-background")
+    .attr("width", width)
+    .attr("height", height + 1);
 
 var slider,
-handle,
-track,
-trail,
-boat,
-dateTime;
+    handle,
+    track,
+    trail,
+    boat,
+    dateTime;
 
 
 
@@ -315,134 +315,190 @@ d3.json("rivers1.json", function(error, rivers) {
 });
 
 var newFish = [],
+    newFish1 =[],
 timeStamp = [];
 
 function getJson(data) {
-  // fishData = data;
+    // fishData = data;
 
-  var steelhead = data.features.filter(
-      function(d) {
-        return d.properties.catalognumber =="KNTM-2546"
-        
+    // var steelhead = data.features.filter(
+    //     function(d) {
+    //       return d.properties.catalognumber =="KNTM-2546"
+
+    //   })
+
+    // var steelhead1 = data.features.filter(
+    //     function(d) {
+    //       return d.properties.catalognumber !=="KNTM-2546"
+
+    //   })
+
+    steelhead = data.features;
+
+    steelhead.sort(function(a,b){
+        return (parseDate(a.properties.datecollected)) - (parseDate(b.properties.datecollected));
     })
 
+    // fishData = steelhead;
 
-  steelhead.forEach(function(d,i){
-    newFish.push(d.geometry.coordinates)
-    timeStamp.push(parseDate(d.properties.datecollected))
-    // timeStamp = parseDate(timeStamp);
+    var date1 = [],
+        date2 = [],
+        ind1 = [],
+        ind2 = [];
 
-});
+    steelhead.forEach(function(d,i){
+        timeStamp.push(parseDate(d.properties.datecollected))
 
-    dateTime = d3.time.scale()
-        .range([0,100])
-        .domain([d3.min(timeStamp), d3.max(timeStamp)]);
+        if (d.properties.catalognumber =="KNTM-2546"){
+            // console.log(parseDate(d.properties.datecollected))
+            date1.push(parseDate(d.properties.datecollected))
+            newFish.push(d.geometry.coordinates);
+        }else{
+            date2.push(parseDate(d.properties.datecollected))
+            newFish1.push(d.geometry.coordinates);
+        }
 
-  fishData = steelhead;
+    });
 
-  var boats = [
-  {type: "LineString", id: "nzl", coordinates: newFish}
-  ];
+fishData = date1;
 
-  minValue = trailLength;
-  maxValue = currentValue = targetValue = steelhead.length - 1;
+    function eliminateDuplicates(arr) {
+      var i,
+          len=arr.length,
+          out=[],
+          obj={};
 
-var format = d3.time.format("%x %H:%M"); //format of date ticks
-
-var xAxis = d3.svg.axis()
-    .scale(x)
-    .orient("bottom")
-    .tickFormat(function(t) { 
-      return xTicks[t] ||  format(timeStamp[t]) })
-    .tickSize(12, 0)
-    .tickPadding(0);
-console.log(d3.range(0, targetValue, 60 * 2).concat(-180, d3.keys(xTicks)))
-
-  x.domain([minValue, maxValue]);
-xAxis.tickValues(d3.range(0, targetValue, 90 * 2).concat(-180, d3.keys(xTicks)));
-
-
-
-var gX = svg.append("g")
-.attr("class", "g-x g-axis")
-.attr("transform", "translate(0," + brushHeight / 2 + ")")
-.call(xAxis);
-
-gX.select(".domain")
-.select(function() { return this.parentNode.insertBefore(this.cloneNode(true), this); })
-.attr("class", "g-halo");
-
-var tick = gX.selectAll(".tick")
-.each(function() { this.parentNode.appendChild(this); });
-
-tick.select("line")
-.attr("y1", -8)
-.attr("y2", 8);
-
-tick.filter(function(d) { return d in xTicks; })
-.attr("class", function(d) { return "tick tick-special tick-" + xTicks[d].toLowerCase(); });
-
-slider = svg.append("g")
-.attr("class", "g-slider")
-.call(brush);
-
-slider.selectAll(".extent,.resize")
-.remove();
-
-slider.select(".background")
-.attr("height", brushHeight);
-
-handle = slider.append("circle")
-.attr("class", "g-handle")
-.attr("transform", "translate(0," + brushHeight / 2 + ")")
-.attr("r", 8);
-
-track = svg.selectAll(".g-track")
-.data(boats)
-.enter().append("path")
-.attr("class", function(d) { return "g-track g-track-" + d.id; });
-
-trail = svg.selectAll(".g-trail")
-.data(boats)
-.enter().append("path")
-.attr("class", function(d) { return "g-trail g-trail-" + d.id; });
-
-boat = svg.selectAll(".g-boat")
-.data(boats)
-.enter().append("g")
-.attr("class", function(d) { return "g-boat g-boat-" + d.id; })
-
-boat.append("circle").attr("r", 5);
-
-  // boat.append("text")
-  //     .text(function(d) { return d.id.substr(0, 2); })
-  //     .attr("dy", "0.3em")
-
-  d3.select(window)
-  .on("keydown", keydowned);
+      for (i=0;i<len;i++) {
+        obj[arr[i]]=0;
+      }
+      for (i in obj) {
+        out.push(new Date(i));
+      }
+      return out;
+    }
 
 
-  svg.append("text")
-  .attr("x", width / 2.1)
-  .attr("y", height - 20)
-  .attr("class", "g-city")
-  .text("North Vancouver");
 
-  // svg.append("text")
-  // .attr("x", 530)
-  // .attr("y", 220)
-  // .attr("class", "g-island")
-  // .text("North Vancouver");
+    timeStamp = (eliminateDuplicates(timeStamp));
 
-  svg.append("text")
-  .attr("x", 450)
-  .attr("y", 320)
-  .attr("class", "g-island")
-  .text("Capilano Lake");
+stuff = timeStamp;
 
-  playButton
-  .on("click", paused)
-  .each(paused);
+date1.forEach(function(d,i){
+    var indx = timeStamp.map(Number).indexOf(+d);
+    if (indx != -1) ind1.push(timeStamp.map(Number).indexOf(+d))
+})
+
+date2.forEach(function(d,i){
+    var indx = timeStamp.map(Number).indexOf(+d);
+    if (indx != -1) ind2.push(timeStamp.map(Number).indexOf(+d))
+})
+
+
+dateTime = d3.time.scale()
+    .range([0,width])
+    .domain([d3.min(timeStamp), d3.max(timeStamp)]);
+
+
+
+    var boats = [
+        {type: "LineString", id: "nzl", coordinates: newFish, indx: ind1},
+        {type: "LineString", id: "usa", coordinates: newFish1, indx: ind2}
+    ];
+
+    minValue = trailLength;
+    maxValue = currentValue = targetValue = timeStamp.length - 1;
+
+    var format = d3.time.format("%x %H"); //format of date ticks
+
+    var xAxis = d3.svg.axis()
+        .scale(x)
+        .orient("bottom")
+        .tickFormat(function(t) { 
+        return xTicks[t] ||  format(timeStamp[t]) })
+        .tickSize(12, 0)
+        .tickPadding(0);
+  
+
+    x.domain([minValue, maxValue]);
+    xAxis.tickValues(d3.range(0, targetValue, 90 * 3).concat(-180, d3.keys(xTicks)));
+
+
+
+    var gX = svg.append("g")
+        .attr("class", "g-x g-axis")
+        .attr("transform", "translate(0," + brushHeight / 2 + ")")
+        .call(xAxis);
+
+    gX.select(".domain")
+        .select(function() { return this.parentNode.insertBefore(this.cloneNode(true), this); })
+        .attr("class", "g-halo");
+
+    var tick = gX.selectAll(".tick")
+        .each(function() { this.parentNode.appendChild(this); });
+
+    tick.select("line")
+        .attr("y1", -8)
+        .attr("y2", 8);
+
+    tick.filter(function(d) { return d in xTicks; })
+        .attr("class", function(d) { return "tick tick-special tick-" + xTicks[d].toLowerCase(); });
+
+    slider = svg.append("g")
+        .attr("class", "g-slider")
+        .call(brush);
+
+    slider.selectAll(".extent,.resize")
+        .remove();
+
+    slider.select(".background")
+        .attr("height", brushHeight);
+
+    handle = slider.append("circle")
+        .attr("class", "g-handle")
+        .attr("transform", "translate(0," + brushHeight / 2 + ")")
+        .attr("r", 8);
+
+    track = svg.selectAll(".g-track")
+        .data(boats)
+        .enter().append("path")
+        .attr("class", function(d) { return "g-track g-track-" + d.id; });
+
+    trail = svg.selectAll(".g-trail")
+        .data(boats)
+        .enter().append("path")
+        .attr("class", function(d) { 
+            return "g-trail g-trail-" + d.id; });
+
+    boat = svg.selectAll(".g-boat")
+        .data(boats)
+        .enter().append("g")
+        .attr("class", function(d) { return "g-boat g-boat-" + d.id; })
+
+    boat.append("circle").attr("r", 4);
+
+    // boat.append("text")
+    //     .text(function(d) { return d.id.substr(0, 2); })
+    //     .attr("dy", "0.3em")
+
+    d3.select(window)
+        .on("keydown", keydowned);
+
+
+    svg.append("text")
+        .attr("x", width / 2.1)
+        .attr("y", height - 20)
+        .attr("class", "g-city")
+        .text("North Vancouver");
+
+    svg.append("text")
+        .attr("x", 450)
+        .attr("y", 320)
+        .attr("class", "g-island")
+        .text("Capilano Lake");
+
+    playButton
+        .on("click", paused)
+        .each(paused);
 }
 
 
@@ -452,7 +508,7 @@ function paused() {
     slider.interrupt();
     this.textContent = "Play";
 } else {
-    console.log(minValue)
+    // console.log(minValue)
     if (currentValue === maxValue) slider
         .call(brush.extent([currentValue = minValue, currentValue]))
     .call(brush.event)
@@ -491,10 +547,13 @@ function brushed() {
       targetValue = x.invert(d3.mouse(this)[0]);
       move();
   }
-} else {
+    } else {
     currentValue = brush.extent()[0];
+
     handle.attr("cx", x(currentValue));
     var i = Math.round(currentValue);
+        
+
     if (i === minValue){
         boat.attr("transform", function(d) { 
 
@@ -503,24 +562,38 @@ function brushed() {
 
       boat.transition()
       .delay(function(d){
-        return dateTime(timeStamp[i]);
+        if(d.indx.indexOf(i) != -1) {
+            return dateTime(timeStamp[d.indx.indexOf(i)]);
+    }
       })
       .ease("linear").attr("transform", function(d) { 
-          return "translate(" + projection(d.coordinates[i]) + ")"; });
+        // if(d.indx)
+        if(d.indx.indexOf(i) != -1) {
+            console.log(i)
+            console.log(d)
+            console.log(d.indx.indexOf(i))
+          return "translate(" + projection(d.coordinates[d.indx.indexOf(i)]) + ")"; 
+      }
+      });
   }
 
 if (i === minValue){
     trail.attr("d", function(d) { 
-        // console.log(d.coordinates.slice(Math.max(0, i - trailLength), i + 1))
+    
       return path({type: "LineString", coordinates: d.coordinates.slice(Math.max(0, i - trailLength), i + 1)}); });
 } else {
   trail.transition()
   .delay(function(d){
-        return dateTime(timeStamp[i]);
+        if(d.indx.indexOf(i) != -1) {
+            return dateTime(timeStamp[d.indx.indexOf(i)]);
+    }
       })
   .ease("linear").attr("d", function(d) { 
-    // console.log(d.coordinates.slice(Math.max(0, i - trailLength), i + 1))
-      return path({type: "LineString", coordinates: d.coordinates.slice(Math.max(0, i - trailLength), i + 1)}); });
+if(d.indx.indexOf(i) != -1) {
+      return path({type: "LineString", coordinates: d.coordinates.slice(Math.max(0, d.indx.indexOf(i) - trailLength), d.indx.indexOf(i) + 1)}); 
+  }
+
+  });
 }
 }
 }
@@ -556,7 +629,7 @@ function type(d) {
   return [+d.x, +d.y, +d.t, +d.ws, +d.wd];
 }
 $.ajax({
-  url: "http://pbrown.ca:8080/geoserver/cite/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=cite:steelhead&maxFeatures=2000&outputFormat=application/json",
+  url: "http://pbrown.ca:8080/geoserver/cite/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=cite:steelhead&maxFeatures=4000&outputFormat=application/json",
   dataType: 'json',
   jsonCallback: 'getJson',
   success: getJson
