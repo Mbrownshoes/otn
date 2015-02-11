@@ -367,16 +367,12 @@ steelhead.sort(function(a,b){
                 fishy.push(d)      
     
             }
-            // else{
-            //     date2.push(parseDate(d.properties.datecollected))
-            //     newFish1.push(d.geometry.coordinates);
-            // }
 
         });
-
-        all[fish] = fishy;
+        console.log(fishy.length)
+        if (fishy.length>5) all[fish] = fishy;
     })
-    // console.log(all)
+    console.log(all)
 
     function eliminateDuplicates(arr) {
       var i,
@@ -444,7 +440,7 @@ dateTime = d3.time.scale()
 minValue = trailLength;
 maxValue = currentValue = targetValue = timeStamp.length - 1;
 
-    var format = d3.time.format("%x %H"); //format of date ticks
+    var format = d3.time.format("%x"); //format of date ticks
 
     var xAxis = d3.svg.axis()
     .scale(x)
@@ -670,7 +666,7 @@ function type(d) {
   return [+d.x, +d.y, +d.t, +d.ws, +d.wd];
 }
 $.ajax({
-    url: "http://pbrown.ca:8080/geoserver/cite/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=cite:steelhead&maxFeatures=4000&outputFormat=application/json",
+    url: "http://pbrown.ca:8080/geoserver/cite/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=cite:steelhead&maxFeatures=6000&outputFormat=application/json",
     dataType: 'json',
     jsonCallback: 'getJson',
     success: getJson
