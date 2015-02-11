@@ -354,7 +354,7 @@ steelhead.sort(function(a,b){
         output.push(steelhead[i].properties.catalognumber);
     }
 
-    console.log(output)
+    // console.log(output)
     
     var fishy = [], all = {};
 
@@ -364,7 +364,8 @@ steelhead.sort(function(a,b){
             timeStamp.push(parseDate(d.properties.datecollected))
             
             if (d.properties.catalognumber === fish){
-                fishy.push(d)               
+                fishy.push(d)      
+    
             }
             // else{
             //     date2.push(parseDate(d.properties.datecollected))
@@ -375,7 +376,7 @@ steelhead.sort(function(a,b){
 
         all[fish] = fishy;
     })
-    console.log(all)
+    // console.log(all)
 
     function eliminateDuplicates(arr) {
       var i,
@@ -396,18 +397,25 @@ steelhead.sort(function(a,b){
 
 timeStamp = (eliminateDuplicates(timeStamp));
 
-var boats = []
+var boats = [],
+     hold = [];
 
 for (var key in all){
     var obj = all[key];
-    for (var prop in obj){
-        if(obj.hasOwnProperty(prop)){
-            obj[prop].indx = timeStamp.map(Number).indexOf(+parseDate(obj[prop].properties.datecollected));
-            // obj[prop].id = 
+    len = obj.length;
+
+    var ind =[], coords =[];
+    obj.forEach(function(d,i){
+// console.log(d)
+        var indx = timeStamp.map(Number).indexOf(+parseDate(d.properties.datecollected));
+        if (indx != -1) {
+            ind.push(timeStamp.map(Number).indexOf(+parseDate(d.properties.datecollected)))
+            coords.push(d.geometry.coordinates)
         }
-    }
-    // console.log(obj)
-    boats.push({type: "LineString", id: "nzl",coordinates:obj })
+        
+          
+    })
+    boats.push({type: "LineString", id: "nzl",coordinates: coords, indx: ind })
 }
 
 console.log(boats)
@@ -424,10 +432,10 @@ console.log(boats)
 
 
 dateTime = d3.time.scale()
-.range([0,width])
-.domain([d3.min(timeStamp), d3.max(timeStamp)]);
+    .range([0,width])
+    .domain([d3.min(timeStamp), d3.max(timeStamp)]);
 
-
+// fishData = all;
 // var boats = [
 // {type: "LineString", id: "nzl", coordinates: newFish, indx: ind1},
 // {type: "LineString", id: "usa", coordinates: newFish1, indx: ind2}
@@ -584,14 +592,14 @@ function brushed() {
 
         if (i === minValue){
             boat.attr("transform", function(d) { 
-
-                return "translate(" + projection(d.coordinates[i].geometry.coordinates) + ")"; 
+                console.log(d.coordinates[i])
+                return "translate(" + projection(d.coordinates[i]) + ")"; 
             });
         }else{
 
             boat.transition()
             .delay(function(d){
-                console.log(d.coordinates[i].indx.indexOf(i))
+                // console.log(d.indx)
 
             if(d.indx.indexOf(i) != -1) {
             return dateTime(timeStamp[d.indx.indexOf(i)]);
