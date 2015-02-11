@@ -403,6 +403,7 @@ for (var key in all){
     for (var prop in obj){
         if(obj.hasOwnProperty(prop)){
             obj[prop].indx = timeStamp.map(Number).indexOf(+parseDate(obj[prop].properties.datecollected));
+            // obj[prop].id = 
         }
     }
     // console.log(obj)
@@ -582,15 +583,16 @@ function brushed() {
 
 
         if (i === minValue){
-            console.log(boat)
             boat.attr("transform", function(d) { 
 
-                return "translate(" + projection(d.coordinates[i]) + ")"; 
+                return "translate(" + projection(d.coordinates[i].geometry.coordinates) + ")"; 
             });
         }else{
 
             boat.transition()
             .delay(function(d){
+                console.log(d.coordinates[i].indx.indexOf(i))
+
             if(d.indx.indexOf(i) != -1) {
             return dateTime(timeStamp[d.indx.indexOf(i)]);
             }
