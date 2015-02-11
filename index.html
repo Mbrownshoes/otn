@@ -400,7 +400,7 @@ var boats = [
 {type: "LineString", id: "nzl", coordinates: newFish, indx: ind1},
 {type: "LineString", id: "usa", coordinates: newFish1, indx: ind2}
 ];
-
+console.log(boats)
 minValue = trailLength;
 maxValue = currentValue = targetValue = timeStamp.length - 1;
 
@@ -551,6 +551,7 @@ function brushed() {
 
 
         if (i === minValue){
+            console.log(boat)
             boat.attr("transform", function(d) { 
 
                 return "translate(" + projection(d.coordinates[i]) + ")"; 
