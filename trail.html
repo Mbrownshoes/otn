@@ -12,7 +12,7 @@
 
 <style>
 
-.g-graphic {
+/*.g-graphic {*/
   position: relative;
 }
 
@@ -296,7 +296,7 @@ function ready(error, topo, usa, nzl) {
   var course = topojson.feature(topo, topo.objects.course);
 
   indexOffset = -usa[0][2]; // offset from time -> index
-console.log(usa[0][2])
+console.log(usa)
   var boats = [
     {type: "LineString", id: "usa", coordinates: usa},
     {type: "LineString", id: "nzl", coordinates: nzl}
@@ -498,12 +498,14 @@ function brushed() {
     }
   } else {
     currentValue = brush.extent()[0];
+
     handle.attr("cx", x(currentValue));
     var i = Math.round(currentValue) + indexOffset;
+    console.log(i)
     gate.classed("g-course-crossed", function(d) { return currentValue >= d.properties.time; });
 
     boat.attr("transform", function(d) {
-    console.log(d.coordinates[i])
+    // console.log(d.coordinates[i])
      return "translate(" + projection(d.coordinates[i]) + ")"; });
 
     track.attr("d", function(d) { 
