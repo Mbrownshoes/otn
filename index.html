@@ -11,6 +11,7 @@
 <script src="http://d3js.org/queue.v1.min.js"></script>
 <link rel="stylesheet" href="main.css"> 
 
+<script src="spin.min.js"></script>
 <style>
 
 .g-graphic {
@@ -192,7 +193,7 @@
   fill: #aaa;
 }
 
-.g-island {
+.g-lake {
   font-family: Arial;
   font-size: 10px;
   fill: #000;
@@ -203,18 +204,39 @@
 
 </style>
 <body>
-   <h1>Life of a Steelhead</h1>
+<div id="foo"></div>
+   <h1>Duelling Steelheads</h1>
    <div class="g-graphic">
     <button id="g-play-button">Pause</button>
 </div>
 
 <script>(function() {
 
-    var width = 970,
+var opts = {
+  lines: 13, // The number of lines to draw
+  length: 20, // The length of each line
+  width: 10, // The line thickness
+  radius: 30, // The radius of the inner circle
+  corners: 1, // Corner roundness (0..1)
+  rotate: 0, // The rotation offset
+  direction: 1, // 1: clockwise, -1: counterclockwise
+  color: '#000', // #rgb or #rrggbb or array of colors
+  speed: 1, // Rounds per second
+  trail: 60, // Afterglow percentage
+  shadow: false, // Whether to render a shadow
+  hwaccel: false, // Whether to use hardware acceleration
+  className: 'spinner', // The CSS class to assign to the spinner
+  zIndex: 2e9, // The z-index (defaults to 2000000000)
+  top: '50%', // Top position relative to parent
+  left: '50%' // Left position relative to parent
+};
+
+
+var width = 970,
     height = 500,
     brushHeight = 60;
 
-    var moving,
+var moving,
     minValue,
     maxValue,
     currentValue,
@@ -222,75 +244,66 @@
     trailLength = 10,
     alpha = .25;
 
-    var formatMinute = d3.format("+.0f");
+var formatMinute = d3.format("+.0f");
 
 
 
-    var x = d3.scale.linear()
-    .range([110, width - 40])
-    .clamp(true);
+var x = d3.scale.linear()
+.range([110, width - 40])
+.clamp(true);
 
-// var x = d3.time.scale()
-//     .range([110, width-40])
-//     .clamp(true);
 
 var xTicks = {
-  // "0": "Tagged"
+  "0": "Tagged"
 };
 
 
-
-// var xAxis = d3.svg.axis()
-// .scale(x)
-// .orient("bottom")
-// .tickSize(12, 0)
-// .tickPadding(0);
 
 var parseDate = d3.time.format("%y-%m-%d %H:%M").parse;
 
 
 var brush = d3.svg.brush()
-.x(x)
-.extent([0, 0])
-.on("brush", brushed);
+    .x(x)
+    .extent([0, 0])
+    .on("brush", brushed);
 
 var projection = d3.geo.mercator()
-.center([-123.1, 49.4])
-.scale(155000)
-.translate([width / 2, height / 2]);
+    .center([-123.1, 49.4])
+    .scale(155000)
+    .translate([width / 2, height / 2]);
 
 var path = d3.geo.path()
-.projection(projection)
-.pointRadius(3.5);
+    .projection(projection)
+    .pointRadius(3.5);
 
 var playButton = d3.select("#g-play-button");
 
 var svg = d3.select(".g-graphic").append("svg")
-.attr("width", width)
-.attr("height", height);
+    .attr("width", width)
+    .attr("height", height);
 
 svg.append("rect")
-.attr("class", "g-background")
-.attr("width", width)
-.attr("height", height + 1);
+    .attr("class", "g-background")
+    .attr("width", width)
+    .attr("height", height + 1);
 
 var slider,
-handle,
-track,
-trail,
-boat,
-dateTime;
+    handle,
+    track,
+    trail,
+    boat,
+    dateTime;
 
-
+var color = d3.scale.category10();
 
 d3.json("vancouver.json", function(error, vancouver) {
   if (error) return console.error(error);
 
 
-  svg.append("path")
-  .datum(topojson.mesh(vancouver))
-  .attr("class", "g-land")
-  .attr("d", path);
+    svg.append("path")
+        .datum(topojson.mesh(vancouver))
+        .attr("class", "g-land")
+        .attr("d", path);
 
 });
 
@@ -298,104 +311,109 @@ d3.json("lakes.json", function(error, lakes) {
   if (error) return console.error(error);
 
   svg.append("path")
-  .datum(topojson.mesh(lakes))
-  .attr("d", path)
-  .attr("class", "g-water");
+      .datum(topojson.mesh(lakes))
+      .attr("d", path)
+      .attr("class", "g-water");
 
 });
+
 
 d3.json("rivers1.json", function(error, rivers) {
   if (error) return console.error(error);
 
   svg.append("path")
-  .datum(topojson.mesh(rivers))
-  .attr("d", path)
-  .attr("class", "g-water");
+      .datum(topojson.mesh(rivers))
+      .attr("d", path)
+      .attr("class", "g-water");
 
 });
 
 var newFish = [],
-newFish1 =[],
-timeStamp = [];
+    newFish1 =[],
+    timeStamp = [];
+
 
 function getJson(data) {
-    // fishData = data;
 
-    // var steelhead = data.features.filter(
-    //     function(d) {
-    //       return d.properties.catalognumber =="KNTM-2546"
+    steelhead = data.features;
 
-    //   })
+    steelhead.sort(function(a,b){
+        return (parseDate(a.properties.datecollected)) - (parseDate(b.properties.datecollected));
+    })
 
-    // var steelhead1 = data.features.filter(
-    //     function(d) {
-    //       return d.properties.catalognumber !=="KNTM-2546"
-
-    //   })
-
-steelhead = data.features;
-
-steelhead.sort(function(a,b){
-    return (parseDate(a.properties.datecollected)) - (parseDate(b.properties.datecollected));
-})
-
-    // fishData = steelhead;
 
     var date1 = [],
-    date2 = [],
-    ind1 = [],
-    ind2 = [];
+        date2 = [],
+        ind1 = [],
+        ind2 = [];
 
-    steelhead.forEach(function(d,i){
-        timeStamp.push(parseDate(d.properties.datecollected))
+    // get the different fish IDs
+    var flags = [], output = [], i;
+    for( i=0; i<steelhead.length; i++) {
+        if( flags[steelhead[i].properties.catalognumber]) continue;
 
-        if (d.properties.catalognumber =="KNTM-2546"){
-            date1.push(parseDate(d.properties.datecollected))
-            newFish.push(d.geometry.coordinates);
-        }else{
-            date2.push(parseDate(d.properties.datecollected))
-            newFish1.push(d.geometry.coordinates);
-        }
+        flags[steelhead[i].properties.catalognumber] = true;
+        output.push(steelhead[i].properties.catalognumber);
+    }
 
-    });
+    // create timestamp of all recorded times for all fish.
+    var fishy = [], all = {};
+    output.forEach(function(fish,j){
+        fishy = []
+        steelhead.forEach(function(d,i){
+            timeStamp.push(parseDate(d.properties.datecollected))
+            // organize fish data by ID
+            if (d.properties.catalognumber === fish){
+                fishy.push(d)      
+    
+            }
+
+        });
+        if (fishy.length>5) all[fish] = fishy;
+    })
+    // console.log(all)
 
     function eliminateDuplicates(arr) {
-      var i,
-      len=arr.length,
-      out=[],
-      obj={};
+        var i,
+        len=arr.length,
+        out=[],
+        obj={};
 
-      for (i=0;i<len;i++) {
-        obj[arr[i]]=0;
+        for (i=0;i<len;i++) {
+            obj[arr[i]]=0;
+        }
+        for (i in obj) {
+            out.push(new Date(i));
+        }
+        return out;
     }
-    for (i in obj) {
-        out.push(new Date(i));
+
+
+
+    timeStamp = (eliminateDuplicates(timeStamp));
+
+    // create index value for each fish so timing of movement is accurate.
+    // causes the long load time..
+    var boats = [];
+    for (var key in all){
+        var obj = all[key];
+
+        var ind =[], coords =[];
+
+        obj.forEach(function(d,i){
+            var indx = timeStamp.map(Number).indexOf(+parseDate(d.properties.datecollected));
+            if (indx != -1) {
+                ind.push(timeStamp.map(Number).indexOf(+parseDate(d.properties.datecollected)))
+                coords.push(d.geometry.coordinates)
+            }
+            
+              
+        })
+        boats.push({type: "LineString", id: key,coordinates: coords, indx: ind })
     }
-    return out;
-}
+    spinner.stop()
 
-
-
-timeStamp = (eliminateDuplicates(timeStamp));
-
-
-date1.forEach(function(d,i){
-    var indx = timeStamp.map(Number).indexOf(+d);
-    if (indx != -1) ind1.push(timeStamp.map(Number).indexOf(+d))
-})
-
-date2.forEach(function(d,i){
-    var indx = timeStamp.map(Number).indexOf(+d);
-    if (indx != -1) ind2.push(timeStamp.map(Number).indexOf(+d))
-})
-
-
-dateTime = d3.time.scale()
-.range([0,width])
-.domain([d3.min(timeStamp), d3.max(timeStamp)]);
-
-
-
+<<<<<<< HEAD
 var boats = [
 {type: "LineString", id: "nzl", coordinates: newFish, indx: ind1},
 {type: "LineString", id: "usa", coordinates: newFish1, indx: ind2}
@@ -403,8 +421,16 @@ var boats = [
 console.log(boats)
 minValue = trailLength;
 maxValue = currentValue = targetValue = timeStamp.length - 1;
+=======
+    dateTime = d3.time.scale()
+        .range([0,width])
+        .domain([d3.min(timeStamp), d3.max(timeStamp)]);
 
-    var format = d3.time.format("%x %H"); //format of date ticks
+    minValue = trailLength;
+    maxValue = currentValue = targetValue = timeStamp.length - 1;
+>>>>>>> gh-pages
+
+    var format = d3.time.format("%x"); //format of date ticks
 
     var xAxis = d3.svg.axis()
     .scale(x)
@@ -418,122 +444,126 @@ maxValue = currentValue = targetValue = timeStamp.length - 1;
     x.domain([minValue, maxValue]);
     xAxis.tickValues(d3.range(0, targetValue, 90 * 3).concat(-180, d3.keys(xTicks)));
 
-
-
     var gX = svg.append("g")
-    .attr("class", "g-x g-axis")
-    .attr("transform", "translate(0," + brushHeight / 2 + ")")
-    .call(xAxis);
+        .attr("class", "g-x g-axis")
+        .attr("transform", "translate(0," + brushHeight / 2 + ")")
+        .call(xAxis);
 
     gX.select(".domain")
-    .select(function() { return this.parentNode.insertBefore(this.cloneNode(true), this); })
-    .attr("class", "g-halo");
+        .select(function() { return this.parentNode.insertBefore(this.cloneNode(true), this); })
+        .attr("class", "g-halo");
 
     var tick = gX.selectAll(".tick")
-    .each(function() { this.parentNode.appendChild(this); });
+        .each(function() { this.parentNode.appendChild(this); });
 
     tick.select("line")
-    .attr("y1", -8)
-    .attr("y2", 8);
+        .attr("y1", -8)
+        .attr("y2", 8);
 
     tick.filter(function(d) { return d in xTicks; })
-    .attr("class", function(d) { return "tick tick-special tick-" + xTicks[d].toLowerCase(); });
+        .attr("class", function(d) { return "tick tick-special tick-" + xTicks[d].toLowerCase(); });
 
     slider = svg.append("g")
-    .attr("class", "g-slider")
-    .call(brush);
+        .attr("class", "g-slider")
+        .call(brush);
 
     slider.selectAll(".extent,.resize")
-    .remove();
+        .remove();
 
     slider.select(".background")
-    .attr("height", brushHeight);
+        .attr("height", brushHeight);
 
     handle = slider.append("circle")
-    .attr("class", "g-handle")
-    .attr("transform", "translate(0," + brushHeight / 2 + ")")
-    .attr("r", 8);
+        .attr("class", "g-handle")
+        .attr("transform", "translate(0," + brushHeight / 2 + ")")
+        .attr("r", 8);
 
     track = svg.selectAll(".g-track")
-    .data(boats)
-    .enter().append("path")
-    .attr("class", function(d) { return "g-track g-track-" + d.id; });
+        .data(boats)
+        .enter().append("path")
+        .attr("class", function(d) { return "g-track g-track-" + d.id; });
 
     trail = svg.selectAll(".g-trail")
-    .data(boats)
-    .enter().append("path")
-    .attr("class", function(d) { 
-        return "g-trail g-trail-" + d.id; });
+        .data(boats)
+        .enter().append("path")
+        .style("stroke", function(d) {
+                return color(d.id)
+            })
+        .attr("class", function(d) { 
+            return "g-trail g-trail-" + d.id; });
 
     boat = svg.selectAll(".g-boat")
-    .data(boats)
-    .enter().append("g")
-    .attr("class", function(d) { return "g-boat g-boat-" + d.id; })
+        .data(boats)
+        .enter().append("g")
+        .attr("class", function(d) { return "g-boat g-boat-" + d.id; })
 
-    boat.append("circle").attr("r", 4);
+    boat.append("circle").attr("r", 4)
+        .style("fill", function(d) {
+            return color(d.id)
+        });
 
     // boat.append("text")
     //     .text(function(d) { return d.id.substr(0, 2); })
     //     .attr("dy", "0.3em")
 
     d3.select(window)
-    .on("keydown", keydowned);
+        .on("keydown", keydowned);
 
 
     svg.append("text")
-    .attr("x", width / 2.1)
-    .attr("y", height - 20)
-    .attr("class", "g-city")
-    .text("North Vancouver");
+        .attr("x", width / 2.1)
+        .attr("y", height - 20)
+        .attr("class", "g-city")
+        .text("North Vancouver");
 
     svg.append("text")
-    .attr("x", 450)
-    .attr("y", 320)
-    .attr("class", "g-island")
-    .text("Capilano Lake");
+        .attr("x", 450)
+        .attr("y", 320)
+        .attr("class", "g-lake")
+        .text("Capilano Lake");
 
     playButton
-    .on("click", paused)
-    .each(paused);
+        .on("click", paused)
+        .each(paused);
 }
 
 
 function paused() {
 
-  if (slider.node().__transition__) {
-    slider.interrupt();
-    this.textContent = "Play";
-} else {
-    // console.log(minValue)
-    if (currentValue === maxValue) slider
+    if (slider.node().__transition__) {
+        slider.interrupt();
+        this.textContent = "Play";
+    } else {
+        // console.log(minValue)
+        if (currentValue === maxValue) slider
         .call(brush.extent([currentValue = minValue, currentValue]))
-    .call(brush.event)
-    .call(brushBackground);
+        .call(brush.event)
+        .call(brushBackground);
 
-    targetValue = maxValue;
-    var i = Math.round(currentValue);
-    slider.transition()
-    .duration((targetValue - currentValue) / (targetValue - minValue) * 20000)
-    .ease("linear")
-    .call(brush.extent([targetValue, targetValue]))
-    .call(brush.event)
-    .call(brushBackground);
+        targetValue = maxValue;
+        var i = Math.round(currentValue);
+        slider.transition()
+        .duration((targetValue - currentValue) / (targetValue - minValue) * 20000)
+        .ease("linear")
+        .call(brush.extent([targetValue, targetValue]))
+        .call(brush.event)
+        .call(brushBackground);
 
-    this.textContent = "Pause";
-}
+        this.textContent = "Pause";
+    }
 }
 
 function keydowned() {
-  if (d3.event.metaKey || d3.event.altKey) return;
-  switch (d3.event.keyCode) {
-    case 37: targetValue = Math.max(x.domain()[0], currentValue - trailLength); break;
-    case 39: targetValue = Math.min(x.domain()[1], currentValue + trailLength); break;
-    default: return;
-}
-playButton.text("Play");
-slider.interrupt();
-move();
-d3.event.preventDefault();
+      if (d3.event.metaKey || d3.event.altKey) return;
+      switch (d3.event.keyCode) {
+        case 37: targetValue = Math.max(x.domain()[0], currentValue - trailLength); break;
+        case 39: targetValue = Math.min(x.domain()[1], currentValue + trailLength); break;
+        default: return;
+    }
+    playButton.text("Play");
+    slider.interrupt();
+    move();
+    d3.event.preventDefault();
 }
 
 function brushed() {
@@ -553,13 +583,15 @@ function brushed() {
         if (i === minValue){
             console.log(boat)
             boat.attr("transform", function(d) { 
-
+                // console.log(d.coordinates[i])
                 return "translate(" + projection(d.coordinates[i]) + ")"; 
             });
         }else{
 
             boat.transition()
             .delay(function(d){
+                // console.log(d.indx)
+
             if(d.indx.indexOf(i) != -1) {
             return dateTime(timeStamp[d.indx.indexOf(i)]);
             }
@@ -628,6 +660,8 @@ function move() {
 function type(d) {
   return [+d.x, +d.y, +d.t, +d.ws, +d.wd];
 }
+var target = document.getElementById('foo');
+var spinner = new Spinner(opts).spin(target);
 $.ajax({
     url: "http://pbrown.ca:8080/geoserver/cite/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=cite:steelhead&maxFeatures=4000&outputFormat=application/json",
     dataType: 'json',
