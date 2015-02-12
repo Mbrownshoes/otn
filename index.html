@@ -281,7 +281,7 @@ var slider,
     boat,
     dateTime;
 
-
+var color = d3.scale.category10();
 
 d3.json("vancouver.json", function(error, vancouver) {
   if (error) return console.error(error);
@@ -320,25 +320,12 @@ var newFish = [],
 
 
 function getJson(data) {
-    // fishData = data;
 
-    // var steelhead = data.features.filter(
-    //     function(d) {
-    //       return d.properties.catalognumber =="KNTM-2546"
+    steelhead = data.features;
 
-    //   })
-
-    // var steelhead1 = data.features.filter(
-    //     function(d) {
-    //       return d.properties.catalognumber !=="KNTM-2546"
-
-    //   })
-
-steelhead = data.features;
-
-steelhead.sort(function(a,b){
-    return (parseDate(a.properties.datecollected)) - (parseDate(b.properties.datecollected));
-})
+    steelhead.sort(function(a,b){
+        return (parseDate(a.properties.datecollected)) - (parseDate(b.properties.datecollected));
+    })
 
 
     var date1 = [],
@@ -369,10 +356,9 @@ steelhead.sort(function(a,b){
             }
 
         });
-        console.log(fishy.length)
         if (fishy.length>5) all[fish] = fishy;
     })
-    console.log(all)
+    // console.log(all)
 
     function eliminateDuplicates(arr) {
       var i,
@@ -398,7 +384,7 @@ var boats = [],
 
 for (var key in all){
     var obj = all[key];
-    len = obj.length;
+    // len = obj.length;
 
     var ind =[], coords =[];
     obj.forEach(function(d,i){
@@ -411,7 +397,7 @@ for (var key in all){
         
           
     })
-    boats.push({type: "LineString", id: "nzl",coordinates: coords, indx: ind })
+    boats.push({type: "LineString", id: key,coordinates: coords, indx: ind })
 }
 
 console.log(boats)
@@ -498,6 +484,9 @@ maxValue = currentValue = targetValue = timeStamp.length - 1;
     trail = svg.selectAll(".g-trail")
     .data(boats)
     .enter().append("path")
+    .style("stroke", function(d) {
+            return color(d.id)
+        })
     .attr("class", function(d) { 
         return "g-trail g-trail-" + d.id; });
 
@@ -506,7 +495,10 @@ maxValue = currentValue = targetValue = timeStamp.length - 1;
     .enter().append("g")
     .attr("class", function(d) { return "g-boat g-boat-" + d.id; })
 
-    boat.append("circle").attr("r", 4);
+    boat.append("circle").attr("r", 4)
+        .style("fill", function(d) {
+            return color(d.id)
+        });
 
     // boat.append("text")
     //     .text(function(d) { return d.id.substr(0, 2); })
