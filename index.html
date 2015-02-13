@@ -269,7 +269,7 @@ var brush = d3.svg.brush()
 
 var projection = d3.geo.mercator()
     .center([-123.1, 49.4])
-    .scale(155000)
+    .scale(175000)
     .translate([width / 2, height / 2]);
 
 var path = d3.geo.path()
@@ -340,6 +340,9 @@ function getJson(data) {
     steelhead.sort(function(a,b){
         return (parseDate(a.properties.datecollected)) - (parseDate(b.properties.datecollected));
     })
+
+    // remove first points for each fish measured up river
+    steelhead = steelhead.slice(5,steelhead.length)
 
 
     var date1 = [],
@@ -502,13 +505,13 @@ function getJson(data) {
 
 
     svg.append("text")
-        .attr("x", width / 2.1)
-        .attr("y", height - 20)
+        .attr("x", width / 2)
+        .attr("y", height - 22)
         .attr("class", "g-city")
         .text("North Vancouver");
 
     svg.append("text")
-        .attr("x", 450)
+        .attr("x", 430)
         .attr("y", 320)
         .attr("class", "g-lake")
         .text("Capilano Lake");
@@ -572,7 +575,7 @@ function brushed() {
 
 
         if (i === minValue){
-            console.log(boat)
+            // console.log(boat)
             boat.attr("transform", function(d) { 
                 // console.log(d.coordinates[i])
                 return "translate(" + projection(d.coordinates[i]) + ")"; 
@@ -610,9 +613,12 @@ function brushed() {
             })
             .ease("linear").attr("d", function(d) { 
                 if(d.indx.indexOf(i) != -1) {
-
-                // if (d.indx.indexOf(i) +1 === d.coordinates.length) { trailLength = 0}
-                return path({type: "LineString", coordinates: d.coordinates.slice(Math.max(0, d.indx.indexOf(i) - trailLength), d.indx.indexOf(i) + 1)}); 
+                    trailLength = 10;
+                    console.log(d.indx.indexOf(i) +1)
+                    console.log(d.coordinates.length)
+                    if (d.indx.indexOf(i) +1 === d.coordinates.length) { trailLength = 0
+                    }
+                    return path({type: "LineString", coordinates: d.coordinates.slice(Math.max(0, d.indx.indexOf(i) - trailLength), d.indx.indexOf(i) + 1)}); 
                 }
 
 
@@ -654,7 +660,7 @@ function type(d) {
 var target = document.getElementById('foo');
 var spinner = new Spinner(opts).spin(target);
 $.ajax({
-    url: "http://pbrown.ca:8080/geoserver/cite/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=cite:steelhead&maxFeatures=4000&outputFormat=application/json",
+    url: "http://pbrown.ca:8080/geoserver/cite/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=cite:steelhead&maxFeatures=4500&outputFormat=application/json",
     dataType: 'json',
     jsonCallback: 'getJson',
     success: getJson
