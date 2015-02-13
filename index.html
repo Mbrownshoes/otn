@@ -413,22 +413,13 @@ function getJson(data) {
     }
     spinner.stop()
 
-<<<<<<< HEAD
-var boats = [
-{type: "LineString", id: "nzl", coordinates: newFish, indx: ind1},
-{type: "LineString", id: "usa", coordinates: newFish1, indx: ind2}
-];
-console.log(boats)
-minValue = trailLength;
-maxValue = currentValue = targetValue = timeStamp.length - 1;
-=======
+
     dateTime = d3.time.scale()
         .range([0,width])
         .domain([d3.min(timeStamp), d3.max(timeStamp)]);
 
     minValue = trailLength;
     maxValue = currentValue = targetValue = timeStamp.length - 1;
->>>>>>> gh-pages
 
     var format = d3.time.format("%x"); //format of date ticks
 
