@@ -245,6 +245,7 @@ var xAxis = d3.svg.axis()
     .scale(x)
     .orient("bottom")
     .tickFormat(function(t) {
+      console.log(t)
         return xTicks[t] ||  format(timeStamp[t]) })
     .tickSize(12, 0)
     .tickPadding(0);
@@ -554,7 +555,7 @@ function brushed() {
         }
     } else {
         currentValue = brush.extent()[0];
-
+console.log(handle.attr("cx", x(currentValue)))
         handle.attr("cx", x(currentValue));
         var i = Math.round(currentValue);
 
