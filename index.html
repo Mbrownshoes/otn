@@ -572,7 +572,7 @@ function brushed() {
 
 
         if (i === minValue){
-            console.log(boat)
+            // console.log(boat)
             boat.attr("transform", function(d) { 
                 // console.log(d.coordinates[i])
                 return "translate(" + projection(d.coordinates[i]) + ")"; 
@@ -584,6 +584,8 @@ function brushed() {
                 // console.log(d.indx)
 
             if(d.indx.indexOf(i) != -1) {
+                console.log(d.id +" " + i +" " + d.indx.indexOf(i))
+                console.log(timeStamp[d.indx.indexOf(i)])
             return dateTime(timeStamp[d.indx.indexOf(i)]);
             }
             })
