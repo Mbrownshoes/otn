@@ -15,7 +15,7 @@ fish.json: build/steelhead.csv
 	-p fish="catalognumber" \
 	-p timestamp="datecollected" \
 	-p geom="st_setsrid_4326" \
-	-- fish
+	-- $<
 
 
 build/subunits.json: build/Boundaries/CD_2011.shp

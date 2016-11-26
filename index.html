@@ -2,13 +2,13 @@
 <meta charset="utf-8">
 <!-- <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5/leaflet.css" /> -->
 
-<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="http://d3js.org/topojson.v1.min.js"></script>
 <!-- <script src="http://d3js.org/colorbrewer.v1.min.js"></script> -->
 <!-- <script src="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.2/leaflet.js"></script> -->
-<!-- <script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script> -->
+<script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
 <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
-<!-- <script src="http://d3js.org/queue.v1.min.js"></script> -->
+<script src="http://d3js.org/queue.v1.min.js"></script>
 <link rel="stylesheet" href="main.css">
 
 <script src="spin.min.js"></script>
@@ -191,11 +191,8 @@
     <button id="g-play-button">Pause</button>
 </div>
 
-<script>(function() {
+<script>
 
-var width = 970,
-    height = 500,
-    brushHeight = 60;
 
 var opts = {
   lines: 13, // The number of lines to draw
@@ -217,7 +214,9 @@ var opts = {
 };
 
 
-
+var width = 970,
+    height = 500,
+    brushHeight = 60;
 
 var moving,
     minValue,
@@ -230,28 +229,17 @@ var moving,
 
 
 var x = d3.scale.linear()
-    .range([110, width - 40])
-    .clamp(true);
+.range([110, width - 40])
+.clamp(true);
 
 
 var xTicks = {
   "0": "Tagged"
 };
 
-var format = d3.time.format("%x"); //format of date ticks
 
 
-var xAxis = d3.svg.axis()
-    .scale(x)
-    .orient("bottom")
-    .tickFormat(function(t) {
-      console.log(t)
-        return xTicks[t] ||  format(timeStamp[t]) })
-    .tickSize(12, 0)
-    .tickPadding(0);
-
-
-var parseDate = d3.time.format("%y-%m-%d %H:%M").parse;
+var parseDate = d3.time.format("%Y-%m-%d %H:%M:%S").parse;
 
 
 var brush = d3.svg.brush()
@@ -281,6 +269,7 @@ svg.append("rect")
 
 var slider,
     handle,
+    track,
     trail,
     boat,
     dateTime;
@@ -336,6 +325,11 @@ function getJson(data) {
     steelhead = steelhead.slice(5,steelhead.length)
 
 
+    var date1 = [],
+        date2 = [],
+        ind1 = [],
+        ind2 = [];
+
     // get the different fish IDs
     var flags = [], output = [], i;
     for( i=0; i<steelhead.length; i++) {
@@ -350,6 +344,7 @@ function getJson(data) {
     output.forEach(function(fish,j){
         fishy = []
         steelhead.forEach(function(d,i){
+            // console.log(d.properties.datecollected)
             timeStamp.push(parseDate(d.properties.datecollected))
             // organize fish data by ID
             if (d.properties.catalognumber === fish){
@@ -360,7 +355,7 @@ function getJson(data) {
         });
         if (fishy.length>5) all[fish] = fishy;
     })
-    // console.log(all)
+    // console.log(timeStamp)
 
     function eliminateDuplicates(arr) {
         var i,
@@ -380,7 +375,7 @@ function getJson(data) {
 
 
     timeStamp = (eliminateDuplicates(timeStamp));
-
+// console.log(timeStamp)
     // create index value for each fish so timing of movement is accurate.
     // causes the long load time..
     var boats = [];
@@ -410,8 +405,17 @@ function getJson(data) {
     minValue = trailLength;
     maxValue = currentValue = targetValue = timeStamp.length - 1;
 
+    var format = d3.time.format("%x"); //format of date ticks
 
-    
+    var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom")
+    .tickFormat(function(t) {
+        console.log(t)
+        return xTicks[t] ||  format(timeStamp[t]) })
+    .tickSize(12, 0)
+    .tickPadding(0);
+
 
     x.domain([minValue, maxValue]);
     xAxis.tickValues(d3.range(0, targetValue, 90 * 3).concat(-180, d3.keys(xTicks)));
@@ -450,15 +454,16 @@ function getJson(data) {
         .attr("transform", "translate(0," + brushHeight / 2 + ")")
         .attr("r", 8);
 
-    // track = svg.selectAll(".g-track")
-    //     .data(boats)
-    //     .enter().append("path")
-    //     .attr("class", function(d) { return "g-track g-track-" + d.id; });
+    track = svg.selectAll(".g-track")
+        .data(boats)
+        .enter().append("path")
+        .attr("class", function(d) { return "g-track g-track-" + d.id; });
 
     trail = svg.selectAll(".g-trail")
         .data(boats)
         .enter().append("path")
         .style("stroke", function(d) {
+          console.log(d.id)
                 return color(d.id)
             })
         .attr("class", function(d) {
@@ -499,14 +504,6 @@ function getJson(data) {
         .each(paused);
 }
 
-$.ajax({
-    url: "http://pbrown.ca:8080/geoserver/cite/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=cite:steelhead&maxFeatures=1500&outputFormat=application/json",
-    dataType: 'json',
-    jsonCallback: 'getJson',
-    success: getJson
-});
-var target = document.getElementById('foo');
-var spinner = new Spinner(opts).spin(target);
 
 function paused() {
 
@@ -555,7 +552,7 @@ function brushed() {
         }
     } else {
         currentValue = brush.extent()[0];
-console.log(handle.attr("cx", x(currentValue)))
+
         handle.attr("cx", x(currentValue));
         var i = Math.round(currentValue);
 
@@ -571,9 +568,10 @@ console.log(handle.attr("cx", x(currentValue)))
             boat.transition()
             .delay(function(d){
                 // console.log(d.indx)
-                if(d.indx.indexOf(i) != -1) {
-                    return dateTime(timeStamp[d.indx.indexOf(i)]);
-                }
+
+            if(d.indx.indexOf(i) != -1) {
+            return dateTime(timeStamp[d.indx.indexOf(i)]);
+            }
             })
             .ease("linear")
             .attr("transform", function(d) {
@@ -585,9 +583,8 @@ console.log(handle.attr("cx", x(currentValue)))
             });
 
 
+
         }
-
-
 
         if (i === minValue){
             trail.attr("d", function(d) {
@@ -646,8 +643,13 @@ function move() {
 function type(d) {
   return [+d.x, +d.y];
 }
+var target = document.getElementById('foo');
+var spinner = new Spinner(opts).spin(target);
+$.ajax({
+    url: "http://darjeeling.pbrown.ca:8080/geoserver/fish/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=fish:steelhead&CQL_FILTER=catalognumber=%27KNTM-2546%27%20OR%20catalognumber=%27KNTM-2553%27&maxFeatures=5000&outputFormat=application%2Fjson",
+    dataType: 'json',
+    jsonCallback: 'getJson',
+    success: getJson
+});
 
-
-
-
-})()</script>
+</script>
