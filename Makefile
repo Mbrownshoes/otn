@@ -15,7 +15,7 @@ fish.json: build/steelhead.csv
 	-p fish="catalognumber" \
 	-p timestamp="datecollected" \
 	-p geom="st_setsrid_4326" \
-	-- fish
+	-- $<
 
 
 build/subunits.json: build/Boundaries/CD_2011.shp
@@ -42,6 +42,12 @@ build/rivers.json: build/HydRiver_shp
 	ogr2ogr -f GeoJSON -t_srs "+proj=latlong +datum=WGS84" \
 	build/rivers.json \
 	build/HydRiver_shp
+	
+# didn't use this, converted using mapshaper instead
+# rivers.json: build/rivers.json
+# 	node_modules/.bin/topojson \
+# 		-o $@ \
+# 		-- $<
 
 rivers.json: build/rivers.json
 	node_modules/.bin/topojson \
